@@ -24,6 +24,9 @@ jobs:
           (New-Item ./artifacts -ItemType Directory).FullName
 
         # install extensions from list
+      - name: install extensions
+        run: |
+          ./install-extensions-win.ps1
 
         # build artifacts
       - name: artifact
