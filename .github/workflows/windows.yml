@@ -1,0 +1,78 @@
+name: Windows
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+        # prepare
+      - name: prepare
+        run: |
+          # vscode stable win64
+          Invoke-WebRequest "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-archive" -UseBasicParsing -OutFile ./vscode-stable-latest.zip
+          Expand-Archive ./vscode-stable-latest.zip -DestinationPath ./vscode-portable
+          (New-Item ./vscode-portable/data -ItemType Directory).FullName
+          (New-Item ./artifacts -ItemType Directory).FullName
+
+        # install extensions from list
+
+        # build artifacts
+      - name: artifact
+        run: |
+          # archive
+          Add-Type -AssemblyName System.Text.Encoding
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          class FixedEncoder : System.Text.UTF8Encoding {
+              FixedEncoder() : base($true) { }
+              [byte[]] GetBytes([string] $s)
+              {
+                  $s = $s.Replace("\", "/")
+                  return ([System.Text.UTF8Encoding]$this).GetBytes($s)
+              }
+          }
+          [System.IO.Compression.ZipFile]::CreateFromDirectory("$PWD\vscode-portable", "$PWD\archive.zip", [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
+          (Get-FileHash .\archive.zip -Algorithm SHA256).Hash.ToLower() + " *vscode-portable-latest.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
+          Copy-Item archive.zip ./artifacts
+          Copy-Item shafile ./artifacts
+
+        # upload artifacts
+      - uses: actions/upload-artifact@v2
+        with:
+          name: vscode-portable-latest.zip
+          path: artifacts/archive.zip
+      - uses: actions/upload-artifact@v2
+        with:
+          name: vscode-portable-latest.sha256
+          path: artifacts/shafile
+
+        # publish release
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/archive.zip
+          asset_name: vscode-portable-latest.zip
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/shafile
+          asset_name: vscode-portable-latest.sha256
+          asset_content_type: application/zip
