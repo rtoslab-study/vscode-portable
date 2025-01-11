@@ -48,11 +48,11 @@ jobs:
           Copy-Item shafile ./artifacts
 
         # upload artifacts
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: vscode-portable-latest.zip
           path: artifacts/archive.zip
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: vscode-portable-latest.sha256
           path: artifacts/shafile
