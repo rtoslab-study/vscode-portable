@@ -1,6 +1,6 @@
 ahmadawais.shades-of-purple
-CoenraadS.bracket-pair-colorizer-2
 eamodio.gitlens
 MS-CEINTL.vscode-language-pack-zh-hans
 ms-vscode.cpptools
 vscode-icons-team.vscode-icons
+continue.continue
