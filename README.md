@@ -9,4 +9,14 @@ My extensions list as below:
 4. MS-CEINTL.vscode-language-pack-zh-hans
 5. ms-vscode.cpptools
 6. vscode-icons-team.vscode-icons
+7. continue.continue
+
+How to get extensions list?
+
+Windows:
+
+```
+cd cd %USERPROFILE%\.vscode\extensions
+dir
+```
 
